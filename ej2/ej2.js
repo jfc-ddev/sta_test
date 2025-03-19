@@ -34,7 +34,9 @@ const calculateLicenseSegment = (value, digitLength) => {
   const letterValue = extractDivision(value, digitLength + 1);
 
   return (
-    numericPart.toString().padStart(digitLength, "0") +
+    (numericPart % Math.pow(10, digitLength))
+      .toString()
+      .padStart(digitLength, "0") +
     convertToAlphabet(
       Math.round(letterValue + numericPart / Math.pow(10, digitLength))
     )
@@ -47,22 +49,22 @@ const calcularOutOfRange = (division) => {
     : "Out of range";
 };
 
-const calculateDigitCount = (index) => {
-  let digitCount = 6;
+function calculateDigitCount(index) {
+  numDec = 6;
 
   for (let i = 6; i >= 0; i--) {
     if (index < Math.pow(10, i) * Math.pow(26, 6 - i)) {
-      digitCount = i;
+      numDec = i;
       break;
     }
   }
 
   if (index >= Math.pow(10, 0) * Math.pow(26, 6)) {
-    digitCount = 0;
+    numDec = 0;
   }
 
-  return digitCount;
-};
+  return numDec;
+}
 
 const convertToAlphabet = (value) => {
   const result = [];
@@ -75,12 +77,3 @@ const convertToAlphabet = (value) => {
 
   return result.join("").slice(0, 6);
 };
-
-[
-  1123, 999999, 1000000, 1000001, 1100000, 1100001, 1200002, 1800002, 9800002,
-  19800002, 19800003, 29800002, 79800002, 79800003, 79800004, 179800004,
-  308915774, 308915775, 308915776, 308915777,
-].forEach((value) => {
-  console.log(createLicensePlate(value));
-  console.log("-----------------");
-});
