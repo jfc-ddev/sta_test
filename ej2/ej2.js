@@ -1,38 +1,75 @@
-function getLicensePlate(n) {
-  const totalChars = 26;
-  const unicodeCharA = 65;
-  const licenseDigits = 6;
-  const limitLicense = 1000000;
+const extractRemainder = (number, digits) => number % Math.pow(10, digits);
+const extractDivision = (number, digits) =>
+  Math.round(number / Math.pow(10, digits));
 
-  const buildOnlyNumbers = n < limitLicense;
+const createLicensePlate = (value) => {
+  let licensePlate = "";
 
-  if (buildOnlyNumbers) {
-    return n.toString().padStart(licenseDigits, "0");
+  const digitCount = calculateDigitCount(value);
+
+  switch (true) {
+    case digitCount === 6:
+      licensePlate = value.toString().padStart(6, "0");
+      break;
+    case digitCount >= 1 && digitCount <= 5:
+      licensePlate = calculateLicenseSegment(value, digitCount);
+      break;
+    case digitCount === 0:
+      licensePlate = caculateZeroCase(value, digitCount);
+      break;
+    default:
+      licensePlate = "Invalid input";
   }
 
-  n -= limitLicense;
+  return `${value} => ${licensePlate}`;
+};
 
-  let alphaPart = "";
+const caculateZeroCase = (value, digitCount) => {
+  const division = extractDivision(value, digitCount);
+  return calcularOutOfRange(division);
+};
 
-  let numberPart = n % 100000;
-  let alphaIndex = Math.floor(n / 100000);
+const calculateLicenseSegment = (value, digitLength) => {
+  const numericPart = extractRemainder(value, digitLength + 1);
+  const letterValue = extractDivision(value, digitLength + 1);
 
-  while (alphaIndex >= 0) {
-    alphaPart =
-      String.fromCharCode((alphaIndex % totalChars) + unicodeCharA) + alphaPart;
-    alphaIndex = Math.floor(alphaIndex / totalChars) - 1;
+  return (
+    numericPart.toString().padStart(digitLength, "0") +
+    convertToAlphabet(
+      Math.round(letterValue + numericPart / Math.pow(10, digitLength))
+    )
+  );
+};
+
+const calcularOutOfRange = (division) => {
+  return division <= Math.pow(26, 6)
+    ? convertToAlphabet(division)
+    : "Out of range";
+};
+
+const calculateDigitCount = (value) => {
+  if (value >= Math.pow(26, 6)) {
+    return 0;
   }
 
-  let formatNumberPart = numberPart
-    .toString()
-    .padStart(licenseDigits - alphaPart.length, "0");
+  for (let i = 6; i >= 0; i--) {
+    const threshold = Math.pow(10, i) * Math.pow(26, 6 - i);
+    if (value < threshold) {
+      return i;
+    }
+  }
 
-  return `${formatNumberPart}${alphaPart}`;
-}
+  return 6;
+};
 
-console.log(getLicensePlate(0)); // "000000"
-console.log(getLicensePlate(999999)); // "999999"
-console.log(getLicensePlate(1000000)); // "00000A"
-console.log(getLicensePlate(1000001)); // "00001A"
-console.log(getLicensePlate(1099999)); // "99999A"
-console.log(getLicensePlate(1100000)); // "00000B"
+const convertToAlphabet = (value) => {
+  const result = [];
+
+  while (value > 0) {
+    value--;
+    result.push("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[value % 26]);
+    value = Math.round(value / 26);
+  }
+
+  return result.join("").slice(0, 6);
+};
